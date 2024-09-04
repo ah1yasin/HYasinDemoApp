@@ -1,0 +1,71 @@
+﻿@page "/driverStandings"
+@inject IDriverStandingsService DriverStandingsService
+@using HYasinDemoApp.Models
+
+<h3>Driver Standings</h3>
+
+@if (driverStandings == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th @onclick="() => SortTable(nameof(DriverStanding.driverStandingsId))">Id</th>
+                <th @onclick="() => SortTable(nameof(DriverStanding.raceId))">Race</th>
+                <th @onclick="() => SortTable(nameof(DriverStanding.driverId))">Driver</th>
+                <th @onclick="() => SortTable(nameof(DriverStanding.points))">Points</th>
+                <th @onclick="() => SortTable(nameof(DriverStanding.position))">Position</th>
+                <th @onclick="() => SortTable(nameof(DriverStanding.wins))">Wins</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var driverStanding in driverStandings)
+            {
+                <tr>
+                    <td>@driverStanding.driverStandingsId</td>
+                    <td>@driverStanding.raceId</td>
+                    <td>@driverStanding.driverId</td>
+                    <td>@driverStanding.points</td>
+                    <td>@driverStanding.position</td>
+                    <td>@driverStanding.wins</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<DriverStanding> driverStandings;
+    private string currentSortColumn;
+    private bool isAscending = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        driverStandings = await DriverStandingsService.GetDriverStandingsAsync();
+    }
+
+    private void SortTable(string columnName)
+    {
+        if (currentSortColumn == columnName)
+        {
+            isAscending = !isAscending;
+        }
+        else
+        {
+            currentSortColumn = columnName;
+            isAscending = true;
+        }
+
+        driverStandings = isAscending
+            ? driverStandings.OrderBy(d => GetPropertyValue(d, columnName)).ToList()
+            : driverStandings.OrderByDescending(d => GetPropertyValue(d, columnName)).ToList();
+    }
+
+    private object GetPropertyValue(DriverStanding driverStanding, string propertyName)
+    {
+        return typeof(DriverStanding).GetProperty(propertyName).GetValue(driverStanding);
+    }
+}

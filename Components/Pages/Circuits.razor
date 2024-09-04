@@ -1,0 +1,76 @@
+﻿@page "/circuits"
+@inject ICircuitsService CircuitsService
+@using HYasinDemoApp.Models
+
+<h3>Circuits</h3>
+
+ @if (circuits == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th @onclick="() => SortTable(nameof(Circuit.circuitId))">Id</th>
+                <th @onclick="() => SortTable(nameof(Circuit.name))">Name</th>
+                <th @onclick="() => SortTable(nameof(Circuit.location))">Location</th>
+                <th @onclick="() => SortTable(nameof(Circuit.country))">Country</th>
+                <th @onclick="() => SortTable(nameof(Circuit.lat))">Lat</th>
+                <th @onclick="() => SortTable(nameof(Circuit.lng))">Long</th>
+                <th @onclick="() => SortTable(nameof(Circuit.alt))">Alt</th>
+                <th @onclick="() => SortTable(nameof(Circuit.url))">Wikipedia URL </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var circuit in circuits)
+            {
+                <tr>
+                    <td>@circuit.circuitId</td>
+                    <td>@circuit.name</td>
+                    <td>@circuit.location</td>
+                    <td>@circuit.country</td>
+                    <td>@circuit.lat</td>
+                    <td>@circuit.lng</td>
+                    <td>@circuit.alt</td>
+                    <td>@circuit.url</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+} 
+
+ @code {
+    private List<Circuit> circuits;
+    private string? currentSortColumn;
+    private bool isAscending = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        circuits = await CircuitsService.GetCircuitsAsync();
+    }
+
+    private void SortTable(string columnName)
+    {
+        if (currentSortColumn == columnName)
+        {
+            isAscending = !isAscending;
+        }
+        else
+        {
+            currentSortColumn = columnName;
+            isAscending = true;
+        }
+
+        circuits = isAscending
+            ? circuits.OrderBy(c => GetPropertyValue(c, columnName)).ToList()
+            : circuits.OrderByDescending(c => GetPropertyValue(c, columnName)).ToList();
+    }
+
+    private object GetPropertyValue(Circuit circuit, string propertyName)
+    {
+        return typeof(Circuit).GetProperty(propertyName).GetValue(circuit);
+    }
+} 
